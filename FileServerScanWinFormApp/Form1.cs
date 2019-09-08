@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
+using FileServerScanWinFormApp.Entities;
 
 namespace FileServerScanWinFormApp
 {
@@ -18,51 +19,33 @@ namespace FileServerScanWinFormApp
         {
             InitializeComponent();
         }
-
-        bool contemPalavra = false;
-       
-        public void EncontraPalavra()
-        {   
-            var arquivos = Directory.EnumerateFiles(txtDiretorio.Text, "*.*", SearchOption.AllDirectories);
-
-            foreach (string arquivoAtual in arquivos)
-            {
-                PercorreArquivo(arquivoAtual);
-            }         
-
-        }
-
-        public void PercorreArquivo(string ArquivoAtual)
-        {
-            StreamReader sr;
-            sr = File.OpenText(ArquivoAtual);
-            while (!sr.EndOfStream)
-            {
-                string linhaDoArquivo = sr.ReadLine();
-                foreach (Match match in Regex.Matches(linhaDoArquivo, txtPalavra.Text, RegexOptions.IgnoreCase))
-                {
-                    contemPalavra = true;
-                    break;
-                }
-            }
-            if (contemPalavra)
-            {
-                lstBxListaArquivos.Items.Add(ArquivoAtual);
-                contemPalavra = false;
-            }
-            sr.Close();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
+        List<string> listaDeArquivosComAPalavra = new List<string>();
+        PercorreArquivo palavraProcurada;
+        List<PercorreArquivo> ImprimirLista = new List<PercorreArquivo>();
+        int cont = 0;
 
         private void btnPesquisar_Click(object sender, EventArgs e)
         {
-            EncontraPalavra();           
-        }
+            var percorreDiretorio = new PercorreDiretorio(txtDiretorio.Text);
+            percorreDiretorio.EncontraArquivos();
 
-        
+            var listaDeArquivos = percorreDiretorio.RetornaListaArquivosDoDiretorio();
+            
+            foreach (var obj in listaDeArquivos)
+            {
+                palavraProcurada = new PercorreArquivo(obj, txtPalavra.Text);                
+                var verificador = palavraProcurada.ProcuraPalavra();
+
+                if (verificador)
+                {
+                    lstBxListaArquivos.Items.Add(obj);
+                    cont++;
+                }
+            }
+
+            MessageBox.Show($"Encontrado(s) {cont.ToString()} arquivo(s) com a palavra procurada.", "Resultado");
+            cont = 0;
+            
+        }
     }
 }
