@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 using FileServerScanWinFormApp.Entities;
@@ -19,21 +20,19 @@ namespace FileServerScanWinFormApp
         {
             InitializeComponent();
         }
-        List<string> listaDeArquivosComAPalavra = new List<string>();
-        PercorreArquivo palavraProcurada;
-        List<PercorreArquivo> ImprimirLista = new List<PercorreArquivo>();
-        int cont = 0;
 
         private void btnPesquisar_Click(object sender, EventArgs e)
         {
             var percorreDiretorio = new PercorreDiretorio(txtDiretorio.Text);
             percorreDiretorio.EncontraArquivos();
 
+            List<string> listaDeArquivosComAPalavra = new List<string>();
             var listaDeArquivos = percorreDiretorio.RetornaListaArquivosDoDiretorio();
-            
+
+            int cont = 0;
             foreach (var obj in listaDeArquivos)
             {
-                palavraProcurada = new PercorreArquivo(obj, txtPalavra.Text);                
+                PercorreArquivo palavraProcurada = new PercorreArquivo(obj, txtPalavra.Text);                
                 var verificador = palavraProcurada.ProcuraPalavra();
 
                 if (verificador)
