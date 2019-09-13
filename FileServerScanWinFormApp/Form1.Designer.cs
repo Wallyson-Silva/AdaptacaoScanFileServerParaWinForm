@@ -108,6 +108,7 @@
             this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "TP Scan File Server";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
             this.ResumeLayout(false);
             this.PerformLayout();
 

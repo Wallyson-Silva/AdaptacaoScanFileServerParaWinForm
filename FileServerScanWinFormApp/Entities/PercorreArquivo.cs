@@ -1,41 +1,47 @@
 ﻿using System.IO;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System;
 
 namespace FileServerScanWinFormApp.Entities
 {
-    class PercorreArquivo
+    public class PercorreArquivo : IDisposable
     {
-        public string CaminhoDoArquivo { get; set; }
-        public string PalavraProcurada { get; set; }
-       
-        public PercorreArquivo()
-        {
-        }
+        public delegate void DelegateArquivo(string CaminhoDoArquivoComPalavra);
+        public event DelegateArquivo EvtArquivo;
 
-        public PercorreArquivo(string caminhoDoArquivo, string palavraProcurada)
+        public void ProcuraPalavra(string caminhoDoArquivoAtual, string palavraProcurada)
         {
-            CaminhoDoArquivo = caminhoDoArquivo;
-            PalavraProcurada = palavraProcurada;
-        }
-
-        bool palavraExiste = false, auxPalavraExiste;
-        public bool ProcuraPalavra()
-        {
-            StreamReader sr;
-            sr = File.OpenText(CaminhoDoArquivo);
-            while (!sr.EndOfStream)
+            try
             {
-                string linhaDoArquivo = sr.ReadLine();
-                foreach (Match match in Regex.Matches(linhaDoArquivo, PalavraProcurada, RegexOptions.IgnoreCase))
-                {                    
-                    palavraExiste = true;
-                }
-            }            
-            sr.Close();
-            auxPalavraExiste = palavraExiste;
-            palavraExiste = false;
-            return auxPalavraExiste;          
-        }        
+                using (StreamReader sr = File.OpenText(caminhoDoArquivoAtual))
+                {
+                    while (!sr.EndOfStream)
+                    {
+                        string linhaDoArquivo = sr.ReadLine();
+                        foreach (Match match in Regex.Matches(linhaDoArquivo, palavraProcurada, RegexOptions.IgnoreCase))
+                        {
+                            EvtArquivo?.Invoke(caminhoDoArquivoAtual);
+                        }
+                    }
+                }                           
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine($"Generic Exception Handler: {e}");
+            }
+            
+        }
+
+        #region "Rotinas"
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+        }
+
+        ~PercorreArquivo()
+        {
+            Dispose();
+        }
+        #endregion
     }
 }

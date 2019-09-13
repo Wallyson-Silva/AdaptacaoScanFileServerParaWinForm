@@ -4,31 +4,20 @@ using System;
 
 namespace FileServerScanWinFormApp.Entities
 {
-    class PercorreDiretorio
-    {
-        public string CaminhoDiretorio { get; set; }
-        private List<string> ListaDeArquivosDiretorio = new List<string>();
-
-
-        public PercorreDiretorio()
-        {
-        }
-
-        public PercorreDiretorio(string caminhoDiretorio)
-        {
-            CaminhoDiretorio = caminhoDiretorio;
-        }     
-
-
-        public void EncontraArquivos()
+    public class PercorreDiretorio : IDisposable
+    {        
+        public delegate void DelegateDiretorio(string arquivoAtual, string palavraProcurada);
+        public event DelegateDiretorio EvtDiretorio;
+        
+        public void EncontraArquivos(string caminhoDiretorio, string palavraProcurada)
         {
             try
             {
-                var arquivos = Directory.EnumerateFiles(CaminhoDiretorio, "*.*", SearchOption.AllDirectories);
+                var arquivos = Directory.EnumerateFiles(caminhoDiretorio, "*.*", SearchOption.AllDirectories);
 
                 foreach (string arquivoAtual in arquivos)
                 {
-                    ListaDeArquivosDiretorio.Add(arquivoAtual);
+                    EvtDiretorio?.Invoke(arquivoAtual, palavraProcurada);
                 }
             }
             catch (Exception e)
@@ -37,10 +26,16 @@ namespace FileServerScanWinFormApp.Entities
             }
         }
 
-        public List<string> RetornaListaArquivosDoDiretorio()
+        #region "Rotinas"
+        public void Dispose()
         {
-            return ListaDeArquivosDiretorio;
+            GC.SuppressFinalize(this);
         }
 
+        ~PercorreDiretorio()
+        {
+            Dispose();
+        }
+        #endregion
     }
 }
